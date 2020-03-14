@@ -17,8 +17,14 @@
 #include <stdio.h>
 
 
+#ifdef VCNL4010_ENABLE
+#include "vcnl4010_driver.h"
+bool prox_init = false;
+#endif
+
 #ifdef MCP9808_ENABLE
 #include "mcp9808_driver.h"
+bool temp_init = false;
 #endif
 
 #ifdef OLED_DRIVER_ENABLE
@@ -28,7 +34,6 @@ uint16_t slave_oled_timeout = 0;
 #ifdef WPM_ENABLE
 uint16_t wpm_graph_timer = 0;
 #endif
-bool temp_init = false;
 
 enum layers {
     _QWERTY = 0,
@@ -147,15 +152,25 @@ static void render_slave_status(void) {
 
     oled_write_P(PSTR("Time: "), false);
     oled_write_P(PSTR("\n"), false);
+#ifdef MCP9808_ENABLE
     if (temp_init) {
 	oled_write_P(PSTR("Temp: "), false);
 	mcp9808_read_str(temp_str);
 	oled_write(temp_str, false);
     }
+    oled_write_P(PSTR("\n"), false);
+#endif
 
-    oled_write_P(PSTR("\n"), false);
-    oled_write_P(PSTR("Proximity: "), false);
-    oled_write_P(PSTR("\n"), false);
+#ifdef VCNL4010_ENABLE
+    if (prox_init) {
+	static uint16_t prox_raw;
+	static char prox_str[20];
+	prox_raw = vcnl4010_read_raw();
+
+	sprintf(prox_str, "Prox: %04d\n", prox_raw);
+	oled_write(prox_str, false);
+    }
+#endif
 #ifdef WPM_ENABLE
     static char wpm_str[10];
     // Write WPM
@@ -423,6 +438,11 @@ void keyboard_post_init_user(void) {
 #ifdef MCP9808_ENABLE
     if (!is_keyboard_master()) {
 	temp_init = mcp9808_init();
+    }
+#endif
+#ifdef VCNL4010_ENABLE
+    if (!is_keyboard_master()) {
+	prox_init = vcnl4010_init();
     }
 #endif
     return;
