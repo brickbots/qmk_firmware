@@ -16,8 +16,19 @@
 #include QMK_KEYBOARD_H
 #include <stdio.h>
 
-char wpm_str[10];
+
+#ifdef MCP9808_ENABLE
+#include "mcp9808_driver.h"
+#endif
+
+#ifdef OLED_DRIVER_ENABLE
+uint16_t slave_oled_timeout = 0;
+#endif
+
+#ifdef WPM_ENABLE
 uint16_t wpm_graph_timer = 0;
+#endif
+bool temp_init = false;
 
 enum layers {
     _QWERTY = 0,
@@ -132,13 +143,21 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
 
 
 static void render_slave_status(void) {
+    static char temp_str[5];
+
     oled_write_P(PSTR("Time: "), false);
     oled_write_P(PSTR("\n"), false);
-    oled_write_P(PSTR("Temp: "), false);
+    if (temp_init) {
+	oled_write_P(PSTR("Temp: "), false);
+	mcp9808_read_str(temp_str);
+	oled_write(temp_str, false);
+    }
+
     oled_write_P(PSTR("\n"), false);
     oled_write_P(PSTR("Proximity: "), false);
     oled_write_P(PSTR("\n"), false);
 #ifdef WPM_ENABLE
+    static char wpm_str[10];
     // Write WPM
     sprintf(wpm_str, "WPM: %03d", get_current_wpm());
     oled_write_P(PSTR("\n"), false);
@@ -217,7 +236,7 @@ static void render_keymap_vis(keyrecord_t *record) {
     draw_box(rand_col, rand_row, record->event.pressed);
 }
 
-
+#ifdef WPM_ENABLE
 static void render_wpm_graph(void) {
     static uint8_t zero_bar_count = 0;
     static uint8_t bar_count = 0;
@@ -302,7 +321,7 @@ static void render_wpm_graph(void) {
 	}
     }
 }
-
+#endif
 
 
 static void oled_rotate_vis(void) {
@@ -342,7 +361,9 @@ void oled_task_user(void) {
     if (is_keyboard_master()) {
 	switch(current_oled_vis) {
 	    case 1: //WPM
+		#ifdef WPM_ENABLE
 		render_wpm_graph();
+		#endif
 		break;
 
 	    case 2: //Matrix drops
@@ -350,6 +371,15 @@ void oled_task_user(void) {
 		break;
 	}
     } else {
+	//Since we don't actually get keypress info on the slave side
+	//Use changed WPM as a proxy
+	if(get_current_wpm() > 0)
+	    slave_oled_timeout=timer_read();
+	// If we have not typed anything in 10 seconds, stop updating the displays
+	if (timer_elapsed(slave_oled_timeout) > 10000) {
+		oled_off();
+		return;
+	}
         render_slave_status(); // Renders the current keyboard state (layer, lock, caps, scroll, etc)
     }
 }
@@ -388,14 +418,24 @@ void encoder_update_user(uint8_t index, bool clockwise) {
 }
 #endif
 
-void matrix_init_keymap(void) { (uint8_t)is_keyboard_master(); }
+void keyboard_post_init_user(void) {
+    debug_enable=false;
+#ifdef MCP9808_ENABLE
+    if (!is_keyboard_master()) {
+	temp_init = mcp9808_init();
+    }
+#endif
+    return;
+}
 void matrix_scan_user(void) {
+#ifdef ENCODER_ENABLE
   if (is_alt_tab_active) {
     if (timer_elapsed(alt_tab_timer) > 700) {
       unregister_code(KC_LALT);
       is_alt_tab_active = false;
     }
   }
+#endif
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -403,7 +443,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 	if (record->event.pressed)
 	    oled_rotate_vis();
 
-
+#ifdef OLED_DRIVER_ENABLE
     oled_keystroke_task(record);
+#endif
+
     return true;
 }
