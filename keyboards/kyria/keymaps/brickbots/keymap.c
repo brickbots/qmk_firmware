@@ -373,7 +373,7 @@ static void oled_keystroke_task(keyrecord_t *record) {
 }
 
 void oled_task_user(void) {
-    if (is_keyboard_master()) {
+    if (!is_keyboard_master()) {
 	switch(current_oled_vis) {
 	    case 1: //WPM
 		#ifdef WPM_ENABLE

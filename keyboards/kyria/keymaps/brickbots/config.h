@@ -44,3 +44,5 @@
 #define ENCODERS_PAD_B { C6 }
 #define ENCODERS_PAD_A_RIGHT { C6 }
 #define ENCODERS_PAD_B_RIGHT { B5 }
+
+#define ENCODER_RESOLUTION 2
