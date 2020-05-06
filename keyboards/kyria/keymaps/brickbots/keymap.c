@@ -72,7 +72,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_QWERTY] = LAYOUT(
       GUI_T(KC_GRV),    KC_Q,   KC_W,   KC_E,   KC_R,   KC_T,                                KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_BSPC,
       ALT_T(KC_UNDS),   KC_A,   KC_S,   KC_D,   KC_F,   KC_G,                                KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
-      KC_LSFT,  KC_Z,   KC_X,   KC_C,   KC_V,   KC_B,   KC_UNDS,  _______, _______, KC_COLN, KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,
+      KC_LSFT,  KC_Z,   KC_X,   KC_C,   KC_V,   KC_B,   KC_LSFT,  _______, _______, KC_RSFT, KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,
 			_______, KC_ESC, KC_LCTRL,  MO(_LOWER),   KC_ENT,   KC_SPC, MO(_RAISE), KC_RCTRL, KC_TAB, _______
     ),
 /*
@@ -195,32 +195,37 @@ static void render_kyria_logo(void) {
     oled_write_raw_P(kyria_logo, sizeof(kyria_logo));
 }
 
-uint8_t oled_buffer[OLED_MATRIX_SIZE];
 const uint8_t single_bit_masks[8] = {127, 191, 223, 239, 247, 251, 253, 254};
 
 static void fade_display(void) {
+    oled_buffer_reader_t reader;
+    uint8_t buff_char;
     if(random() % 30==0) {
 	srand(timer_read());
-        for (uint16_t i = 0; i < OLED_MATRIX_SIZE; i++) {
-	    if (oled_buffer[i] != 0) {
-                oled_write_raw_byte(oled_buffer[i] & single_bit_masks[rand() % 8], i);
+	reader = oled_read_raw(0);
+        for (uint16_t i = 0; i < reader.remaining_element_count; i++) {
+            buff_char = *reader.current_element;
+	    if (buff_char != 0) {
+                oled_write_raw_byte(buff_char & single_bit_masks[rand() % 8], i);
 	    }
+	    reader.current_element++;
         }
     }
 }
 
-
 static void draw_box(uint8_t x, uint8_t y, bool inside) {
     uint16_t start_index = (y * OLED_DISPLAY_WIDTH) + (x*8);
+    oled_buffer_reader_t reader;
     if (inside) {
 	start_index += 2;
 
         for (uint8_t i=0; i < 4; i++)
 	    oled_write_raw_byte(60, start_index + i);
     } else {
+        reader = oled_read_raw(start_index);
 	for (uint8_t i=0; i < 8; i++) {
 	    if (i > 1 && i < 6)
-		oled_write_raw_byte(oled_buffer[start_index + i] | 195, start_index + i);
+		oled_write_raw_byte((*reader.current_element)++ | 195, start_index + i);
 	    else
 		oled_write_raw_byte(255, start_index + i);
 	}
@@ -373,7 +378,7 @@ static void oled_keystroke_task(keyrecord_t *record) {
 }
 
 void oled_task_user(void) {
-    if (!is_keyboard_master()) {
+    if (is_keyboard_master()) {
 	switch(current_oled_vis) {
 	    case 1: //WPM
 		#ifdef WPM_ENABLE
