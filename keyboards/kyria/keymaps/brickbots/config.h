@@ -40,9 +40,18 @@
 #undef ENCODERS_PAD_A_RIGHT
 #undef ENCODERS_PAD_B_RIGHT
 
-#define ENCODERS_PAD_A { B5 }
-#define ENCODERS_PAD_B { C6 }
-#define ENCODERS_PAD_A_RIGHT { C6 }
-#define ENCODERS_PAD_B_RIGHT { B5 }
+#ifdef BLING_BOARD
+  #define ENCODERS_PAD_A { C6 }
+  #define ENCODERS_PAD_B { B5 }
+  #define ENCODERS_PAD_A_RIGHT { B5 }
+  #define ENCODERS_PAD_B_RIGHT { C6 }
 
-#define ENCODER_RESOLUTION 2
+  #define ENCODER_RESOLUTION 2
+#else
+  #define ENCODERS_PAD_A { B5 }
+  #define ENCODERS_PAD_B { C6 }
+  #define ENCODERS_PAD_A_RIGHT { C6 }
+  #define ENCODERS_PAD_B_RIGHT { B5 }
+
+  #define ENCODER_RESOLUTION 2
+#endif
