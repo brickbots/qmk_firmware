@@ -10,9 +10,9 @@ and can be recovered with physical access to the device.
 
 ## Intro and setup
 This keymap implements a 'password manager' of sorts with passcode
-protection.  Passwords, and the unlock code, are defined in a header file.  
-You can replace the included secrets.h file with your own, which should live
-and be included from OUTSIDE the qmk_firmware tree.  See the comments in the
+protection.  Username/password combos and the unlock code are defined in the
+secrets.h file. You can replace the included secrets.h file with your own, which
+should live and be included from OUTSIDE the qmk_firmware tree.  See the comments in the
 source/secrets file for more details.
 
 ## Unlock
