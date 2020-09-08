@@ -153,10 +153,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		    wait_ms(100);
 		    rgblight_sethsv_noeeprom(0,0,0);
 		    wait_ms(200);
-		    rgblight_sethsv_noeeprom(pw_colors[secret_index], 255, 190);
-		    wait_ms(100);
-		    rgblight_sethsv_noeeprom(0,0,0);
-		    wait_ms(200);
 		    rgblight_sethsv_noeeprom(pw_colors[secret_index], 255, 255);
 		}
 		else {
@@ -172,10 +168,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		if(long_pressed) {
 		    // Back to selecting
 		    secret_stage = 0;
-		    rgblight_sethsv_noeeprom(0,0,0);
-		    wait_ms(200);
-		    rgblight_sethsv_noeeprom(pw_colors[secret_index], 255, 255);
-		    wait_ms(100);
 		    rgblight_sethsv_noeeprom(0,0,0);
 		    wait_ms(200);
 		    rgblight_sethsv_noeeprom(pw_colors[secret_index], 255, 190);
