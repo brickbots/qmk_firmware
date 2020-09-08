@@ -9,7 +9,7 @@ passwords to git, but they are stored un-encrypted in the MCU eeprom
 and can be recovered with physical access to the device.
 
 ## Intro and setup
-This keymap implememnts a 'password manager' of sorts with passcode
+This keymap implements a 'password manager' of sorts with passcode
 protection.  Passwords, and the unlock code, are defined in a header file.  
 You can replace the included secrets.h file with your own, which should live
 and be included from OUTSIDE the qmk_firmware tree.  See the comments in the
