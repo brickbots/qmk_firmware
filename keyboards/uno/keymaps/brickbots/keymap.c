@@ -19,9 +19,11 @@ uint8_t good_code = 0;
 bool locked = 1;
 bool pressed = 0;
 bool double_tap = false;
+bool tap_wait = false;
 
 #define LONGPRESS 250
 #define RESET_LENGTH 3000
+#define TAP_TERM 175
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       [0] = LAYOUT(
@@ -63,13 +65,19 @@ void matrix_scan_user(void) {
         }
     }
 
+    if(tap_wait && timeElapsed > TAP_TERM) {
+	tap_wait = false;
+        send_string(pw_usernames[secret_index]);
+    }
+
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (record->event.pressed) {
-	if(timer_elapsed(pressTimer) < 200) {
+	if(timer_elapsed(pressTimer) < TAP_TERM) {
 	    dprint("DT1\n");
 	    double_tap = true;
+	    tap_wait = false;
 	}
 	else
 	{
@@ -185,7 +193,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		    if(double_tap)
 		        send_string(pw_passwords[secret_index]);
 		    else
-		        send_string(pw_usernames[secret_index]);
+			tap_wait = true;
 		}
 		break;
 	}
@@ -196,7 +204,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 }
 
 void keyboard_post_init_user(void) {
-    debug_enable=true;
+    //debug_enable=true;
     rgblight_enable_noeeprom();
     rgblight_sethsv_noeeprom(0, 255, 255);
     rgblight_mode(1);
