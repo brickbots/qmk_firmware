@@ -10,14 +10,15 @@ and can be recovered with physical access to the device.
 
 ## Intro and setup
 This keymap implememnts a 'password manager' of sorts with passcode
-protection.  You can replace the included secrets.h file with your own, 
-included from OUTSIDE the qmk_firmware tree.  See the comments in the
+protection.  Passwords, and the unlock code, are defined in a header file.  
+You can replace the included secrets.h file with your own, which should live
+and be included from OUTSIDE the qmk_firmware tree.  See the comments in the
 source/secrets file for more details.
 
 ## Unlock
 To unlock the device and allow password access you'll need to enter your
 four digit passcode. For each digit tap the key quickly to enter
-the number (i.e. 5 taps to ender the number 5), then hold down for 300ms
+the number (i.e. 5 taps to enter the number 5), then hold down for 300ms
 to advance to the next digit in the code and repeat. If successful, the LED
 will turn green, if you have made a mistake, you'll get a few flashes of 
 red color and you can try again.
@@ -26,7 +27,8 @@ red color and you can try again.
 Once unlocked, you can cycle between as many username/password combos as you
 have setup, each represented by a color defined along with the information in
 secrets.h.  Tap to cycle through them, once you have the one you want,
-long-press (300ms) to select.  Once selected, a single tap will send the
+long-press (300ms) to select. You'll see a flash and the color will get
+brighter.  Once selected, a single tap will send the
 username, and a double tap the password.  A long-press will get you back to
 username/password selection.
 
