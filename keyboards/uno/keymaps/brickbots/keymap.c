@@ -19,7 +19,8 @@ enum interations
   TIMEOUT,
 };
 
-uint16_t pressTimer = 0xFFFF;
+uint16_t press_timer = 0;
+uint32_t press_timer_long = 0;
 uint8_t secret_index = 0;
 uint8_t secret_stage = 0;
 uint8_t pc_index = 0;
@@ -44,18 +45,25 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 void reset_device(void) {
 
     locked = 1;
-    pc_index = 0;
-    current_code = 0;
-    good_code = 0;
-    secret_index = 0;
-    secret_stage = 0;
-    rgblight_sethsv_noeeprom(0, 255, 0);
-    wait_ms(200);
-    rgblight_sethsv_noeeprom(0, 255, 255);
-    wait_ms(100);
-    rgblight_sethsv_noeeprom(0, 255, 0);
-    wait_ms(200);
-    rgblight_sethsv_noeeprom(0, 255, 255);
+    // Always lock for safety, but only
+    // reset the rest and flash if we are not
+    // already in the reset state
+    if(press_timer > 0) {
+        pc_index = 0;
+        current_code = 0;
+        good_code = 0;
+        secret_index = 0;
+        secret_stage = 0;
+        press_timer = 0;
+        press_timer_long = 0;
+        rgblight_sethsv_noeeprom(0, 255, 0);
+        wait_ms(200);
+        rgblight_sethsv_noeeprom(0, 255, 255);
+        wait_ms(100);
+        rgblight_sethsv_noeeprom(0, 255, 0);
+        wait_ms(200);
+        rgblight_sethsv_noeeprom(0, 255, 255);
+    }
 }
 
 
@@ -163,10 +171,10 @@ void interaction_handler(uint8_t interaction_type) {
 
 void matrix_scan_user(void) {
 
-    uint16_t timeElapsed = timer_elapsed(pressTimer);
+    uint16_t timeElapsed = timer_elapsed(press_timer);
 
     // If 5 minutes have elapsed with no new presses... lock it up!
-    if(timeElapsed > 300000) {
+    if(timer_read32() - press_timer_long > 300000) {
 	interaction_handler(TIMEOUT);
     }
     if(pressed) {
@@ -193,7 +201,7 @@ void matrix_scan_user(void) {
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (record->event.pressed) {
-	if(timer_elapsed(pressTimer) < TAP_TERM) {
+	if(timer_elapsed(press_timer) < TAP_TERM) {
 	    dprint("DT1\n");
 	    double_tap = true;
 	    tap_wait = false;
@@ -202,12 +210,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 	{
 	    double_tap = false;
 	}
-	pressTimer = timer_read();
+	// Get both here to have the ability to time > 65 seconds
+	press_timer_long = timer_read32();
+	press_timer = timer_read();
 	pressed = 1;
         rgblight_sethsv_noeeprom(0,0,0);
     } else {
 	pressed = 0;
-	uint16_t timeElapsed = timer_elapsed(pressTimer);
+	uint16_t timeElapsed = timer_elapsed(press_timer);
 	if(timeElapsed < LONG_PRESS_LENGTH) {
 	    if(locked)
 		interaction_handler(SINGLE_TAP);
