@@ -3,7 +3,7 @@
 
 // Include YOUR secret file here... from outside the code tree
 // #include "~/.secrets.h"
-#include "./secrets.h"
+#include "/Users/rich/uno_secrets.h"
 
 enum uno_keycode
 {
@@ -36,6 +36,9 @@ bool interaction_pending = false;
 #define RESET_LENGTH 3000
 #define TAP_TERM 175
 
+#define BRIGHT 128
+#define DIM 64
+
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       [0] = LAYOUT(
             UNO
@@ -58,11 +61,11 @@ void reset_device(void) {
         press_timer_long = 0;
         rgblight_sethsv_noeeprom(0, 255, 0);
         wait_ms(200);
-        rgblight_sethsv_noeeprom(0, 255, 255);
+        rgblight_sethsv_noeeprom(0, 255, BRIGHT);
         wait_ms(100);
         rgblight_sethsv_noeeprom(0, 255, 0);
         wait_ms(200);
-        rgblight_sethsv_noeeprom(0, 255, 255);
+        rgblight_sethsv_noeeprom(0, 255, BRIGHT);
     }
 }
 
@@ -74,31 +77,31 @@ void interaction_handler(uint8_t interaction_type) {
     }
     if(locked) {
 	if(interaction_type == LONG_PRESS) {
-	    rgblight_sethsv_noeeprom(0, 255, 255);
+	    rgblight_sethsv_noeeprom(0, 255, BRIGHT);
 	    if(current_code == passcode[pc_index])
 		good_code++;
 	    if(pc_index == 3) {
 		if(good_code == 4) {
 		    locked = 0;
-		    rgblight_sethsv_noeeprom(82,255,255);
+		    rgblight_sethsv_noeeprom(82,255,BRIGHT);
 		    wait_ms(100);
 		    rgblight_sethsv_noeeprom(0,0,0);
 		    wait_ms(200);
-		    rgblight_sethsv_noeeprom(82,255,255);
+		    rgblight_sethsv_noeeprom(82,255,BRIGHT);
 		    wait_ms(100);
 		    rgblight_sethsv_noeeprom(0,0,0);
 		    wait_ms(300);
-		    rgblight_sethsv_noeeprom(pw_colors[secret_index],255,128);
+		    rgblight_sethsv_noeeprom(pw_colors[secret_index],255,DIM);
 		}
 		else
 		{
 		    rgblight_sethsv_noeeprom(0,0,0);
 		    wait_ms(200);
-		    rgblight_sethsv_noeeprom(0,255,255);
+		    rgblight_sethsv_noeeprom(0,255,BRIGHT);
 		    wait_ms(100);
 		    rgblight_sethsv_noeeprom(0,0,0);
 		    wait_ms(200);
-		    rgblight_sethsv_noeeprom(0,255,255);
+		    rgblight_sethsv_noeeprom(0,255,BRIGHT);
 		    wait_ms(100);
 		    rgblight_sethsv_noeeprom(0,0,0);
 		    wait_ms(200);
@@ -111,7 +114,7 @@ void interaction_handler(uint8_t interaction_type) {
 	    }
 	}
 	else {
-	    rgblight_sethsv_noeeprom(0, 255, 255);
+	    rgblight_sethsv_noeeprom(0, 255, BRIGHT);
 	    current_code++;
 	    if(current_code > 9)
 		current_code = 0;
@@ -127,18 +130,18 @@ void interaction_handler(uint8_t interaction_type) {
 	    if(interaction_type == LONG_PRESS) {
 		// Select!
 		secret_stage = 1;
-		rgblight_sethsv_noeeprom(pw_colors[secret_index], 255, 128);
+		rgblight_sethsv_noeeprom(pw_colors[secret_index], 255, DIM);
 		wait_ms(100);
 		rgblight_sethsv_noeeprom(0,0,0);
 		wait_ms(200);
-		rgblight_sethsv_noeeprom(pw_colors[secret_index], 255, 255);
+		rgblight_sethsv_noeeprom(pw_colors[secret_index], 255, BRIGHT);
 	    }
 	    else {
 		// Cycle
 	      	secret_index++;
 	        if(secret_index == secret_count)
 		    secret_index = 0;
-		rgblight_sethsv_noeeprom(pw_colors[secret_index], 255, 128);
+		rgblight_sethsv_noeeprom(pw_colors[secret_index], 255, DIM);
 	    }
 	    break;
 
@@ -146,18 +149,18 @@ void interaction_handler(uint8_t interaction_type) {
 	    if(interaction_type == LONG_PRESS) {
 		// Back to selecting
 		secret_stage = 0;
-		rgblight_sethsv_noeeprom(pw_colors[secret_index], 255, 128);
+		rgblight_sethsv_noeeprom(pw_colors[secret_index], 255, DIM);
 		wait_ms(100);
 		rgblight_sethsv_noeeprom(0,0,0);
 		wait_ms(300);
 		secret_index++;
 		if(secret_index == secret_count)
 		    secret_index=0;
-		rgblight_sethsv_noeeprom(pw_colors[secret_index], 255, 128);
+		rgblight_sethsv_noeeprom(pw_colors[secret_index], 255, DIM);
 	    }
 	    else {
 		// Send Selected password or username
-		rgblight_sethsv_noeeprom(pw_colors[secret_index], 255, 255);
+		rgblight_sethsv_noeeprom(pw_colors[secret_index], 255, BRIGHT);
 		if(interaction_type == DOUBLE_TAP)
 		    send_string(pw_passwords[secret_index]);
 		else
@@ -236,6 +239,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 void keyboard_post_init_user(void) {
     //debug_enable=true;
     rgblight_enable_noeeprom();
-    rgblight_sethsv_noeeprom(0, 255, 255);
+    rgblight_sethsv_noeeprom(0, 255, BRIGHT);
     rgblight_mode(1);
 }
