@@ -177,7 +177,7 @@ void matrix_scan_user(void) {
     uint16_t timeElapsed = timer_elapsed(press_timer);
 
     // If 5 minutes have elapsed with no new presses... lock it up!
-    if(timer_read32() - press_timer_long > 300000) {
+    if(timer_read32() - press_timer_long > 3000000) {
 	interaction_handler(TIMEOUT);
     }
     if(pressed) {
