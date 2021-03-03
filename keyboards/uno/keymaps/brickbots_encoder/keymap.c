@@ -28,7 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define SCROLL_HOLD_TIME 300 
 
 // start colors for each mode
-#define VOL_COLOR 128
+#define VOL_COLOR 140
 #define V_SCROLL_COLOR 192
 #define H_SCROLL_COLOR 32
 
@@ -70,7 +70,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 rgblight_sethsv_noeeprom(
                         scrollHoriz ? H_SCROLL_COLOR : V_SCROLL_COLOR, 
                         255, 
-                        255
+                        64
                 );
                 scrollMode = 1;
                 scrollClicks = 0;
@@ -85,7 +85,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 void keyboard_post_init_user(void) {
     rgblight_enable_noeeprom();
     rgblight_mode_noeeprom(1);
-    rgblight_sethsv_noeeprom(VOL_COLOR, 255, 255);
+    rgblight_sethsv_noeeprom(VOL_COLOR, 255, 64);
 
     // set to true to get hid console output from various print statements
     debug_enable = false;
@@ -142,11 +142,11 @@ void matrix_scan_user(void) {
             rgblight_sethsv_noeeprom(
                 scrollHoriz ? H_SCROLL_COLOR : V_SCROLL_COLOR, 
                 255, 
-                255
+                64
             );
         } else if(timer_elapsed(scrollTimer) > SCROLL_HOLD_TIME && scrollClicks == 1) {
             dprint("leaving scroll mode\n");
-            rgblight_sethsv_noeeprom(VOL_COLOR, 255, 255);
+            rgblight_sethsv_noeeprom(VOL_COLOR, 255, 64);
             scrollMode = 0;
         }
     }

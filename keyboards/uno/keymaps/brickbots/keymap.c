@@ -36,8 +36,8 @@ bool interaction_pending = false;
 #define RESET_LENGTH 3000
 #define TAP_TERM 175
 
-#define BRIGHT 128
-#define DIM 64
+#define BRIGHT 70
+#define DIM 32
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       [0] = LAYOUT(
