@@ -13,6 +13,7 @@ uint16_t wpm_graph_timer = 0;
 uint16_t slave_oled_timeout = 0;
 
 bool logo_rendered = 0;
+bool autopilot = 0;
 
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
   if (false) {
@@ -286,6 +287,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 	    oled_rotate_vis();
     oled_keystroke_task(record);
 #endif
+    if (keycode == KC_MUTE)
+	autopilot = 1;
 
     return true;
 }
@@ -296,4 +299,21 @@ void keyboard_post_init_user(void) {
   debug_matrix=true;
   //debug_keyboard=true;
   //debug_mouse=true;
+}
+
+
+void housekeeping_task_user() {
+    if(autopilot) {
+        if(random() % 600==0) {
+	    //simulate a keystroke here
+	    update_wpm(KC_A);
+
+	    if(is_master) {
+		    uint8_t rand_col = random() % 11;
+		    uint8_t rand_row = random() % 4;
+		    uint8_t inside = random() % 2;
+		    draw_box(rand_col, rand_row, inside);
+	    }
+	}
+    }
 }
